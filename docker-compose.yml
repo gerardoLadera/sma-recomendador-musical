@@ -1,0 +1,34 @@
+services:
+  plataforma-externa-main:
+    image: eclipse-temurin:17-jdk
+    container_name: docker-main-externo
+    volumes:
+      - ./target:/app/target
+    command: >
+      bash -c "java --add-opens java.xml/com.sun.org.apache.xerces.internal.jaxp=ALL-UNNAMED -cp '/app/target/sma-recomendacion-musical-1.0-SNAPSHOT.jar:/app/target/dependency/*'
+      jade.Boot 
+      -name Plataforma2
+      -port 1102
+      -local-host plataforma-externa-main
+      -mtp 'jade.mtp.http.MessageTransportProtocol(http://0.0.0.0:7779/acc)' 
+      RecomendadorA:com.sma.agentes.AgenteRecomendador"
+    ports:
+      - "7779:7779"
+      - "1102:1102"
+
+  plataforma-externa-container1:
+    image: eclipse-temurin:17-jdk
+    container_name: docker-container-externo
+    depends_on:
+      - plataforma-externa-main
+    volumes:
+      - ./target:/app/target
+    # Agregamos un sleep de 5 segundos para que el contenedor Main tenga tiempo de despertar
+    command: >
+      bash -c "sleep 5 && java --add-opens java.xml/com.sun.org.apache.xerces.internal.jaxp=ALL-UNNAMED -cp '/app/target/sma-recomendacion-musical-1.0-SNAPSHOT.jar:/app/target/dependency/*'
+      jade.Boot 
+      -container 
+      -host plataforma-externa-main
+      -port 1102
+      -local-host plataforma-externa-container1
+      RecomendadorB:com.sma.agentes.AgenteRecomendador"
