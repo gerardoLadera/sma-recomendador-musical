@@ -40,7 +40,7 @@ public class AgenteOyente extends Agent {
                 if (reply != null) {
                     if (reply.getPerformative() == ACLMessage.INFORM && reply.getContent().contains(";")) {
                         String contexto = reply.getContent();
-                        System.out.println("Oyente: Contexto recibido. Buscando recomendadores en Docker...");
+                        System.out.println("Oyente: Contexto recibido -> [" + contexto + "]. Buscando recomendadores ...");
                         //buscar agentes recomendadores en DF remoto (Docker)
                         AID[] recomendadores = buscarServiciosRemotos("recomendador-musical");
                         for (AID r : recomendadores) {

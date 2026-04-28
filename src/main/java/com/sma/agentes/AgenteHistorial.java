@@ -19,7 +19,7 @@ public class AgenteHistorial extends Agent {
     @Override
     protected void setup() {
         memoriaHistorial = new ArrayList<>();
-        System.out.println("Historial (Laureano) [" + getLocalName() + "] iniciado. Auditoría activa...");
+        System.out.println("Agente  [" + getLocalName() + "] iniciado. Auditoría activa...");
 
         // 1. Registro en el DF local
         DFAgentDescription dfd = new DFAgentDescription();

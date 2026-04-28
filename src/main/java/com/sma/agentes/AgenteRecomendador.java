@@ -98,13 +98,13 @@ public class AgenteRecomendador extends Agent {
 		String nombreNormalizado = nombreAgente.toUpperCase(Locale.ROOT);
 
         //Ambos agentes  tienen un catálogo mixto (Rock y Lofi), para que compitan con sus puntuaciones
-		if (nombreNormalizado.contains("A")) {
+		if (nombreNormalizado.endsWith("A")) {
 			catalogo.add(new Cancion("Rock", "Rock Pulse", 5, 4));
             catalogo.add(new Cancion("Rock", "Electric Road", 5, 3));
             catalogo.add(new Cancion("Lofi", "Soft Drift", 2, 5));
             catalogo.add(new Cancion("Lofi", "Lofi Lantern", 1, 4));
             System.out.println("[" + nombreAgente + "] Catálogo mixto cargado (" + catalogo.size() + " canciones)");
-		} else if (nombreNormalizado.contains("B")) {
+		} else if (nombreNormalizado.endsWith("B")) {
 			catalogo.add(new Cancion("Rock", "Riff Central", 4, 2));
             catalogo.add(new Cancion("Rock", "Night Amplifier", 4, 5));
             catalogo.add(new Cancion("Lofi", "Study Waves", 2, 5));
