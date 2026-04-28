@@ -36,7 +36,7 @@ public class AgenteRecomendador extends Agent {
 					ContextoMusical contexto = extraerContexto(msg.getContent());
                     
 					// Buscar mejor canción
-					Cancion mejorCancion = buscarMejorCancion(contexto.energia, contexto.mood);
+					Cancion mejorCancion = buscarMejorCancion(contexto.genero, contexto.energia, contexto.mood);
                     
 					if (mejorCancion != null) {
 						// Calcular similitud
@@ -51,12 +51,12 @@ public class AgenteRecomendador extends Agent {
                         
 						System.out.println("[" + getLocalName() + "] PROPOSE enviado: " + mejorCancion.nombre + " (" + puntaje + "%)");
 					} else {
-						// Si no hay canción (catálogo vacío), rechazar
-						ACLMessage refuse = msg.createReply();
-						refuse.setPerformative(ACLMessage.REFUSE);
-						refuse.setContent("Catalogo vacio");
-						send(refuse);
-						System.err.println("[" + getLocalName() + "] Catálogo vacío, REFUSE enviado");
+						//Si no tiene canciones de ese género, envía un PROPOSE con -1
+						ACLMessage propose = msg.createReply();
+						propose.setPerformative(ACLMessage.PROPOSE);
+						propose.setContent("Sin Opciones|-1");
+						send(propose);
+						System.err.println("[" + getLocalName() + "] Sin opciones para " + contexto.genero + ", PROPOSE con -1 enviado");
 					}
 				} else {
 					block();
@@ -97,39 +97,39 @@ public class AgenteRecomendador extends Agent {
 		catalogo.clear();
 		String nombreNormalizado = nombreAgente.toUpperCase(Locale.ROOT);
 
+        //Ambos agentes  tienen un catálogo mixto (Rock y Lofi), para que compitan con sus puntuaciones
 		if (nombreNormalizado.contains("A")) {
-			// Catálogo Rock
-			catalogo.add(new Cancion("Rock Pulse", 5, 4));
-			catalogo.add(new Cancion("Electric Road", 5, 3));
-			catalogo.add(new Cancion("Riff Central", 4, 2));
-			catalogo.add(new Cancion("Night Amplifier", 4, 5));
-			catalogo.add(new Cancion("Backstage Riot", 3, 2));
-			System.out.println("[" + nombreAgente + "] Especializado en Rock (" + catalogo.size() + " canciones)");
+			catalogo.add(new Cancion("Rock", "Rock Pulse", 5, 4));
+            catalogo.add(new Cancion("Rock", "Electric Road", 5, 3));
+            catalogo.add(new Cancion("Lofi", "Soft Drift", 2, 5));
+            catalogo.add(new Cancion("Lofi", "Lofi Lantern", 1, 4));
+            System.out.println("[" + nombreAgente + "] Catálogo mixto cargado (" + catalogo.size() + " canciones)");
 		} else if (nombreNormalizado.contains("B")) {
-			// Catálogo Lofi
-			catalogo.add(new Cancion("Soft Drift", 2, 5));
-			catalogo.add(new Cancion("Lofi Lantern", 1, 4));
-			catalogo.add(new Cancion("Study Waves", 2, 5));
-			catalogo.add(new Cancion("Warm Loop", 3, 4));
-			catalogo.add(new Cancion("Calm Vinyl", 1, 3));
-			System.out.println("[" + nombreAgente + "] Especializado en Lofi (" + catalogo.size() + " canciones)");
+			catalogo.add(new Cancion("Rock", "Riff Central", 4, 2));
+            catalogo.add(new Cancion("Rock", "Night Amplifier", 4, 5));
+            catalogo.add(new Cancion("Lofi", "Study Waves", 2, 5));
+            catalogo.add(new Cancion("Lofi", "Warm Loop", 3, 4));
+            System.out.println("[" + nombreAgente + "] Catálogo mixto cargado (" + catalogo.size() + " canciones)");
 		} else {
 			// Catálogo por defecto
-			catalogo.add(new Cancion("Default Track", 3, 3));
-			System.out.println("[" + nombreAgente + "] Sin especialización clara, catálogo por defecto");
+			catalogo.add(new Cancion("Rock", "Default Track", 3, 3));
+            System.out.println("[" + nombreAgente + "] Sin especialización clara, catálogo por defecto");
 		}
 	}
 
-	private Cancion buscarMejorCancion(int energiaObjetivo, int moodObjetivo) {
+	private Cancion buscarMejorCancion(String generoObjetivo,int energiaObjetivo, int moodObjetivo) {
 		Cancion mejor = null;
 		double mejorDistancia = Double.MAX_VALUE;
 
 		for (Cancion cancion : catalogo) {
-			double distancia = distanciaEuclidiana(cancion.energia, cancion.mood, energiaObjetivo, moodObjetivo);
-			if (distancia < mejorDistancia) {
-				mejorDistancia = distancia;
-				mejor = cancion;
-			}
+            //Se filtra para que solo compita si la canción es del mismo género pedido por el agente Analista
+            if (cancion.genero.equalsIgnoreCase(generoObjetivo)) {
+                double distancia = distanciaEuclidiana(cancion.energia, cancion.mood, energiaObjetivo, moodObjetivo);
+                if (distancia < mejorDistancia) {
+                    mejorDistancia = distancia;
+                    mejor = cancion;
+                }
+            }
 		}
 		return mejor;
 	}
@@ -149,22 +149,23 @@ public class AgenteRecomendador extends Agent {
 
 	private ContextoMusical extraerContexto(String contenido) {
 		if (contenido == null || contenido.trim().isEmpty()) {
-			return new ContextoMusical(3, 3); // Valores por defecto
+			return new ContextoMusical("Rock",3, 3); // Valores por defecto
 		}
 
 		try {
 			// Esperamos formato: "Genero;Energia;Mood"
 			String[] partes = contenido.split(";");
 			if (partes.length >= 3) {
+                String genero = partes[0].trim();
 				int energia = Integer.parseInt(partes[1].trim());
 				int mood = Integer.parseInt(partes[2].trim());
-				return new ContextoMusical(acotarRango(energia), acotarRango(mood));
+				return new ContextoMusical(genero,acotarRango(energia), acotarRango(mood));
 			}
 		} catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
 			System.err.println("[" + getLocalName() + "] Error parseando contexto: " + contenido);
 		}
         
-		return new ContextoMusical(3, 3); // Fallback
+		return new ContextoMusical("Rock",3, 3); // Fallback
 	}
 
 	private int acotarRango(int valor) {
@@ -174,11 +175,13 @@ public class AgenteRecomendador extends Agent {
 	// ===== Clases internas =====
 
 	private static class Cancion {
+        final String genero;
 		final String nombre;
 		final int energia;
 		final int mood;
 
-		Cancion(String nombre, int energia, int mood) {
+		Cancion(String genero,String nombre, int energia, int mood) {
+            this.genero = genero;
 			this.nombre = nombre;
 			this.energia = energia;
 			this.mood = mood;
@@ -186,22 +189,24 @@ public class AgenteRecomendador extends Agent {
 
 		@Override
 		public String toString() {
-			return nombre + " (E:" + energia + ", M:" + mood + ")";
+			return nombre + " [" + genero + "] (E:" + energia + ", M:" + mood + ")";
 		}
 	}
 
 	private static class ContextoMusical {
+        final String genero;
 		final int energia;
 		final int mood;
 
-		ContextoMusical(int energia, int mood) {
+		ContextoMusical(String genero, int energia, int mood) {
+            this.genero = genero;
 			this.energia = energia;
 			this.mood = mood;
 		}
 
 		@Override
 		public String toString() {
-			return "Contexto(E:" + energia + ", M:" + mood + ")";
+			return "Contexto(G: " + genero + ", E:" + energia + ", M:" + mood + ")";
 		}
 	}
 }
