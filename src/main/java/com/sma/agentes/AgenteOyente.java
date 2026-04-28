@@ -73,7 +73,7 @@ public class AgenteOyente extends Agent {
                             if (historial != null) {
                                 ACLMessage histMsg = new ACLMessage(ACLMessage.INFORM);
                                 histMsg.addReceiver(historial);
-                                histMsg.setContent(mejorCancion + " [Match: " + mejorScore + "%]");
+                                histMsg.setContent(mejorCancion + "|" + mejorScore);
                                 send(histMsg);
                             }
                             respuestasRecibidas = 0; mejorScore = -1;
@@ -102,7 +102,7 @@ public class AgenteOyente extends Agent {
         sd.setType(tipo);
         template.addServices(sd);
         try {
-            AID dfRemote = new AID("df@PlataformaDocker", AID.ISGUID);
+            AID dfRemote = new AID("df@Plataforma2", AID.ISGUID);
             dfRemote.addAddresses("http://127.0.0.1:7779/acc");
             DFAgentDescription[] result = DFService.search(this, dfRemote, template);
             
