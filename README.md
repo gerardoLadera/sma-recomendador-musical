@@ -35,15 +35,15 @@ Se deben abrir tres terminales independientes en la raíz del proyecto para leva
 ### 1. Main Container (Plataforma 1)
   Levanta la base del sistema y la interfaz gráfica (GUI) de JADE
 ```bash
-java --add-opens java.xml/com.sun.org.apache.xerces.internal.jaxp=ALL-UNNAMED -cp "target\sma-recomendacion-musical-1.0-SNAPSHOT.jar;target\dependency\*" jade.Boot -name Plataforma1 -gui -mtp "jade.mtp.http.MessageTransportProtocol(http://localhost:7778/acc)"
+java --add-opens java.xml/com.sun.org.apache.xerces.internal.jaxp=ALL-UNNAMED -cp "target\sma-recomendacion-musical-1.0-SNAPSHOT.jar;target\dependency\*" jade.Boot -name Plataforma1 -gui -mtp "jade.mtp.http.MessageTransportProtocol(http://"usar-tu-IP-física":7778/acc)"
 ```
 ### 2. Contenedor 1 (Agente Analista)
 ```bash
-java --add-opens java.xml/com.sun.org.apache.xerces.internal.jaxp=ALL-UNNAMED -cp "target\sma-recomendacion-musical-1.0-SNAPSHOT.jar;target\dependency\*" jade.Boot -container -host localhost Analista:com.sma.agentes.AgenteAnalista
+java --add-opens java.xml/com.sun.org.apache.xerces.internal.jaxp=ALL-UNNAMED -cp "target\sma-recomendacion-musical-1.0-SNAPSHOT.jar;target\dependency\*" jade.Boot -container -host "usar-tu-IP-física" Analista:com.sma.agentes.AgenteAnalista
 ```
 ### 3. Contenedor 1 (Agente Oyente e Historial)
 ```bash
-java --add-opens java.xml/com.sun.org.apache.xerces.internal.jaxp=ALL-UNNAMED -cp "target\sma-recomendacion-musical-1.0-SNAPSHOT.jar;target\dependency\*" jade.Boot -container -host localhost Oyente:com.sma.agentes.AgenteOyente;Historial:com.sma.agentes.AgenteHistorial
+java --add-opens java.xml/com.sun.org.apache.xerces.internal.jaxp=ALL-UNNAMED -cp "target\sma-recomendacion-musical-1.0-SNAPSHOT.jar;target\dependency\*" jade.Boot -container -host "usar-tu-IP-física" Oyente:com.sma.agentes.AgenteOyente;Historial:com.sma.agentes.AgenteHistorial
 ```
 ## 🐳 Ejecución - Plataforma 2 (Docker Linux)
 
